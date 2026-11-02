@@ -1,0 +1,153 @@
+# Personal Loan Assistant
+
+The Hero FinCorp instant personal loan journey (from login to disbursal) as a guided chat. It follows the stages and screens in the Figma file "Untitled" (AaIKvRjdoPLjaGwlgQPdW9) and uses the same branding as the two-wheeler loan chat: Filson Pro, the dark green palette, the bot avatar and the chat shell.
+
+This is a front-end prototype. Every customer, bank, KYC and credit response is mocked, so no data leaves the browser.
+
+## Run it
+
+```bash
+npm install
+npm run dev
+```
+
+Then open http://localhost:5180/.
+
+| Command             | What it does                                 |
+| ------------------- | -------------------------------------------- |
+| `npm run dev`       | Starts the dev server on port 5180           |
+| `npm run build`     | Runs the typecheck, then the production build in `dist/` |
+| `npm run preview`   | Serves the built `dist/` on port 5180        |
+| `npm test`          | Unit tests (pricing, validation, routing)    |
+| `npm run lint`      | ESLint                                       |
+| `npm run typecheck` | TypeScript, no emit                          |
+
+## Deploy on Vercel
+
+The project is a static Vite site; `vercel.json` sets the build (`npm run build`, output `dist`). Both links work from the same deployment: `/` and `/?journey=express`.
+
+**From GitHub (recommended):** push this folder to a repository, then in Vercel choose **Add New → Project**, import the repository and press **Deploy**. Every push redeploys.
+
+**From your computer:** in this folder run `npx vercel` and follow the prompts (log in, accept the detected settings). Add `--prod` to publish to the production URL.
+
+## Two links
+
+| Link | What it is |
+| ---- | ---------- |
+| http://localhost:5180/ | **Standard journey**: the Figma journey screen by screen, 6 stages and 26 screens |
+| http://localhost:5180/?journey=express | **Express journey**: the same loan, branding and components in 4 stages and 12 screens |
+
+### What the express journey changes
+
+| Standard | Express |
+| -------- | ------- |
+| Phone, T&C checkbox, then a separate CERSAI consent on the PAN screen | One phone screen; consent is a single line above **Get OTP** |
+| OTP, then **Verify** | OTP verifies itself on the last digit; "Wrong number? Change it" |
+| Permissions screen (location, camera, notifications) up front | Removed; the phone asks for camera and location when video KYC starts |
+| Loan amount chosen before the credit check | Chosen on the offer, within the approved limit |
+| PAN confirm, other details (parents' names, employment, industry, company), CKYC addresses: 3 screens | One profile card: CKYC details to confirm, plus employment, company, monthly take-home pay and purpose |
+| Offer, then a separate Protection Plus screen | One offer card: amount, tenure, live EMI, fee, amount received, and an optional Protection Plus tick |
+| Bank: company confirm, account type, search, account number typed twice | Pick the bank and approve on Account Aggregator; the account is found for you |
+| Separate upgrade screen after the bank check | Limit rises automatically; "Change amount" on the review card if you want more |
+| KYC intro, Aadhaar, Aadhaar OTP, details confirm, selfie | Aadhaar and OTP on one card; details shown and saved automatically |
+| Selfie and, later, video KYC | One video KYC call, which also takes the photo |
+| Work details, purpose, about-you (office address, emails, income, marital, education, language) | Removed; income and purpose are on the profile card, email comes from CKYC |
+| Repayment setup with UPI ID typing, then mandate, then sanction, then e-sign intro, document and OTP | Review & sign on one card, then AutoPay in one approval (no UPI ID to type) |
+
+The header also shows the time left ("About 4 min left"), and the welcome card lists what to keep handy (PAN, Aadhaar-linked mobile, net banking). The express link supports the same `scenario` values; "Welcome back" starts are only on the standard link.
+
+## Scenarios and starting points
+
+The dark bar at the top picks the outcome and where the customer starts. Both are kept in the URL, so you can link to a specific case:
+
+```
+http://localhost:5180/?scenario=conditional&start=esign
+```
+
+| `scenario`              | Outcome                                                                  |
+| ----------------------- | ------------------------------------------------------------------------ |
+| `disbursed` (default)   | Approved, money transferred, then the sanction letter, e-sign copy and rating |
+| `conditional`           | "Loan Approved Conditionally", with the document, tele-verification and disbursal steps |
+| `bankRetry`             | The first bank verification fails, so the customer can retry or change bank |
+| `rejected`              | The credit check declines the application                                |
+
+| `start`                       | First message                                                      |
+| ----------------------------- | ------------------------------------------------------------------ |
+| `new` (default)               | Welcome card and phone login                                       |
+| `kyc`                         | "Welcome back" resume card, continuing at bank verification and KYC |
+| `work` / `repayment` / `esign` | Resume card, continuing at that stage                             |
+
+## Demo inputs
+
+| Step                 | Works                                    | Shows the error        |
+| -------------------- | ---------------------------------------- | ---------------------- |
+| Phone                | Any 10-digit mobile starting with 6–9    | Fewer digits, or terms not accepted |
+| Login OTP            | Any 4 digits                             | `0000`                 |
+| PAN                  | Any valid PAN, e.g. `ABCDE1234F`         | A malformed PAN        |
+| Bank account         | Any 9–18 digits, entered twice           | The two entries differ |
+| Aadhaar              | 12 digits starting 2–9, e.g. `4567 1234 6782` | A malformed number |
+| Aadhaar and e-sign OTP | Any 6 digits                           | `000000`               |
+| UPI ID               | Any `name@bank`                          | Missing the `@bank` part |
+
+The customer is always "Mayank Sharma" (the Figma's sample customer).
+
+## Journey
+
+The header shows the current stage and the share of the application that is complete: Personal Details 10%, Loan Offer 20%, KYC 40%, Work Details 60%, Re-Payment 80%, E-sign 90%, then 100%.
+
+1. **Getting started:** welcome card with rates and fees, phone and OTP, app permissions, and choosing an amount and tenure with a live EMI.
+2. **Personal details:** PAN with a CERSAI consent, confirming the name, family and employment details, and CKYC addresses with an optional mailing address.
+3. **Loan offer:** credit check, then the offer with Edit Offer and the "eligible for up to ₹5,00,000" upgrade, and Protection Plus insurance.
+4. **KYC:** bank account through Account Aggregator, with the retry state and the optional upgrade, then Aadhaar, the DigiLocker OTP and a selfie liveness check.
+5. **Work details:** company and office address, work email verification, income, loan purpose, and the about-you details.
+6. **Re-payment:** disbursal and EMI schedule, e-mandate or UPI autopay, then video KYC or its alternatives (reverse penny drop, address visit).
+7. **E-sign:** loan summary with the APR, the Legality agreement and OTP signing, then the final disbursed or conditional screen.
+
+## Pricing
+
+All the loan maths lives in `src/journey/pricing.ts` and is tested in `pricing.test.ts`. The Figma's numbers are reproduced exactly; for example, ₹3,00,000 over 36 months at 19.25% gives an EMI of ₹11,035.
+
+- **EMI:** reducing balance at 19.25% a year.
+- **Fees:** a 2.5% processing fee plus 18% GST, deducted at disbursal.
+- **Protection Plus:** ₹200 a month, added on top of the EMI.
+- **APR:** computed from the net amount disbursed.
+- **First EMI:** due on the 8th, skipping a month when that is less than 15 days away.
+
+## Structure
+
+```
+src/
+  App.tsx              prototype bar (scenario, start, restart) and the chat
+  chat/Chat.tsx        header with stage progress, bot and user bubbles, typing indicator
+  journey/
+    Journey.tsx        chat engine: runs a flow (standard or express) one step at a time, with replies, typing delay, auto-scroll
+    types.ts           Answers, StepDef, scenarios and start points
+    stages.ts          the six stages and their progress
+    mock.ts            customer, banks, addresses, resume answers
+    pricing.ts         EMI, fees, APR, EMI dates
+    format.ts          rupees, dates, masks
+    validate.ts        phone, PAN, Aadhaar, account, UPI, email checks
+  steps/               one file per stage; each step is a component plus its routing
+  express/             the express journey (?journey=express): its stages, steps and app shell
+  ui/                  shared controls (cards, fields, chips, OTP, slider, address picker, icons)
+  styles/app.css       Hero FinCorp tokens and all styles
+public/
+  brand/logo.svg       Hero FinCorp logo
+  figma/               artwork exported from the Figma file, unchanged
+```
+
+To add or reorder a step, edit its file in `src/steps/`. Each step declares its stage, progress, component, `next()` route and the typing label shown before the next step. `routing.test.ts` walks the whole journey to catch broken routes.
+
+## Figma assets used
+
+| File | Where it is used |
+| ---- | ---------------- |
+| `spinner.svg` | Short waits (CKYC address, bank statement, DigiLocker, selfie match, mandate, video KYC, signing) |
+| `loader-coin.gif` | Credit check |
+| `check-icon.svg` | Completed stages in the resume and e-sign lists |
+| `insurance-shield.png` | Protection Plus card |
+| `benefit-emi-cover.svg`, `benefit-loan-cover.svg`, `benefit-teleconsult.svg` | Protection Plus benefits |
+| `kyc-step-consent.gif`, `kyc-step-aadhaar.gif` | KYC intro steps |
+| `verified-badge.svg` | Loan disbursed screen |
+
+The small line icons (phone, camera, bank and so on) are simple inline SVGs in `src/ui/icons.tsx`, not exports from the file.

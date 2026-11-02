@@ -1,0 +1,32 @@
+{
+  "name": "personal-loan-chat",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Hero FinCorp Personal Loan Assistant: the instant personal loan journey (login to disbursal) as a guided chat, prototype with mock data.",
+  "scripts": {
+    "dev": "vite --port 5180 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 5180 --strictPort",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.13.0",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "@vitejs/plugin-react": "4.3.3",
+    "eslint": "9.13.0",
+    "eslint-plugin-react-hooks": "5.0.0",
+    "globals": "15.11.0",
+    "typescript": "5.6.3",
+    "typescript-eslint": "8.12.2",
+    "vite": "5.4.10",
+    "vitest": "2.1.4"
+  }
+}
