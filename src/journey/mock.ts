@@ -115,6 +115,7 @@ export const CUSTOMER_ID = '4560079';
 
 /** A finished profile, used when the chat opens as "Welcome back" at a later stage. */
 export const RESUME_ANSWERS: Answers = {
+  request: '',
   phone: '9876543210',
   whatsapp: true,
   amount: LIMITS.approved,

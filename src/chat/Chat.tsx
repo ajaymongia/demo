@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import { SendIcon } from '../ui/icons';
 
 /** Same assistant avatar as the Two-Wheeler Loan Assistant. */
 export function BotAvatar() {
@@ -95,10 +96,55 @@ export function Typing({ label }: { label: string }) {
   );
 }
 
-export function ChatInput() {
+/**
+ * The message box under the chat. Without `onSend` it is the disabled "Choose from the options above" box
+ * of the guided journeys; with it the customer can type (and tap a suggested question).
+ */
+export function ChatInput({
+  onSend,
+  placeholder = 'Choose from the options above',
+  suggestions = [],
+}: {
+  onSend?: (text: string) => void;
+  placeholder?: string;
+  suggestions?: readonly string[];
+}) {
+  const [text, setText] = useState('');
+  if (!onSend) {
+    return (
+      <div className="chat-input">
+        <input type="text" placeholder={placeholder} aria-label="Message" disabled />
+      </div>
+    );
+  }
+  const send = (value: string) => {
+    if (!value.trim()) return;
+    onSend(value.trim());
+    setText('');
+  };
   return (
     <div className="chat-input">
-      <input type="text" placeholder="Choose from the options above" aria-label="Message" disabled />
+      {suggestions.length > 0 && (
+        <div className="ask-chips" aria-label="Suggested questions">
+          {suggestions.map((s) => (
+            <button key={s} type="button" className="chip" onClick={() => send(s)}>
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+      <form
+        className="chat-compose"
+        onSubmit={(e) => {
+          e.preventDefault();
+          send(text);
+        }}
+      >
+        <input type="text" value={text} onChange={(e) => setText(e.target.value)} placeholder={placeholder} aria-label="Message" enterKeyHint="send" />
+        <button type="submit" className="chat-send" aria-label="Send" disabled={!text.trim()}>
+          <SendIcon />
+        </button>
+      </form>
     </div>
   );
 }

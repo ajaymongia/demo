@@ -281,7 +281,8 @@ function Rating() {
 }
 
 /** Also the last screen of the express journey, so it needs only the answers, the scenario and the time. */
-export function FinalStep({ a, scenario, time }: Pick<StepProps, 'a' | 'scenario' | 'time'>) {
+/** `after` adds a block under the final card (the AI journey's "what happens next"). */
+export function FinalStep({ a, scenario, time, after }: Pick<StepProps, 'a' | 'scenario' | 'time'> & { after?: ReactNode }) {
   const [details, setDetails] = useState(false);
   const [doc, setDoc] = useState<'letter' | 'esign' | null>(null);
   const q = quote(a.amount, a.tenure, a.insurance);
@@ -329,6 +330,7 @@ export function FinalStep({ a, scenario, time }: Pick<StepProps, 'a' | 'scenario
             ))}
           </ol>
         </Card>
+        {after}
         <p className="proto-end">End of prototype · use Restart above to try another scenario</p>
       </>
     );
@@ -370,6 +372,7 @@ export function FinalStep({ a, scenario, time }: Pick<StepProps, 'a' | 'scenario
       <Modal title="E-Signed Agreement" open={doc === 'esign'} onClose={() => setDoc(null)}>
         <SignedAgreement a={a} />
       </Modal>
+      {after}
       <p className="proto-end">End of prototype · use Restart above to try another scenario</p>
     </>
   );

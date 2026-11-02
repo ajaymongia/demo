@@ -246,3 +246,24 @@ export const QrIcon = () => (
     <path d="M11.6 11.6h2.2v2.2M17 11.6v.1M11.6 17h.1M14.6 14.6H17V17h-2.4z" />
   </Icon>
 );
+
+export const SendIcon = () => (
+  <Icon>
+    <path d="M17 3 8.6 11.4M17 3l-5.2 14-3.2-5.6L3 8.2z" />
+  </Icon>
+);
+
+/** The AI mark: a four-point sparkle with a small one beside it. */
+export const SparkleIcon = () => (
+  <Icon fill>
+    <path d="M8.5 2.5c.5 3.6 2 5.1 5.5 5.6-3.5.5-5 2-5.5 5.6-.5-3.6-2-5.1-5.5-5.6 3.5-.5 5-2 5.5-5.6z" />
+    <path d="M15 11.5c.3 1.9 1.1 2.7 3 3-1.9.3-2.7 1.1-3 3-.3-1.9-1.1-2.7-3-3 1.9-.3 2.7-1.1 3-3z" />
+  </Icon>
+);
+
+export const ChatIcon = () => (
+  <Icon>
+    <path d="M4 4.5h12a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H9l-4 3v-3H4A1.5 1.5 0 0 1 2.5 13V6A1.5 1.5 0 0 1 4 4.5z" />
+    <path d="M6.5 8.5h7M6.5 11h4.5" />
+  </Icon>
+);

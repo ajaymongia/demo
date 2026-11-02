@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { BotMessage } from '../chat/Chat';
 import { formatPhone, groupAadhaar, maskAadhaar, maskTail, onlyDigits, rupees } from '../journey/format';
 import { AADHAAR_ADDRESS, CUSTOMER, OTHER_BANKS, POPULAR_BANKS, RESUME_ANSWERS, fullName } from '../journey/mock';
 import { LIMITS } from '../journey/pricing';
+import type { StepProps } from '../journey/types';
 import { aadhaarError } from '../journey/validate';
 import { Card, DemoHint, KeyValues, Note, OtpInput, ResendTimer, SelectField, Spinner, TextField, useAfter, useCountdown } from '../ui/controls';
 import { AlertIcon, BankIcon, CheckIcon, FaceIcon, IdCardIcon, LockIcon, PhoneIcon, SunIcon, VideoIcon } from '../ui/icons';
@@ -18,7 +19,8 @@ const MAX_ATTEMPTS = 3;
 
 type BankPhase = 'pick' | 'consent' | 'fetching' | 'failed';
 
-function BankStep({ a, done, submit, scenario, time }: ExpressProps) {
+/** `intro` replaces the opening message (the AI journey asks for the statement before the offer). */
+export function BankStep<Id extends string>({ a, done, submit, scenario, time, intro }: StepProps<Id> & { intro?: ReactNode }) {
   const [phase, setPhase] = useState<BankPhase>('pick');
   const [bank, setBank] = useState('');
   const [attempts, setAttempts] = useState(0);
@@ -45,10 +47,12 @@ function BankStep({ a, done, submit, scenario, time }: ExpressProps) {
 
   return (
     <>
-      <BotMessage time={time}>
-        Next, your <strong>salary account</strong>. Your loan is credited here, and I’ll find the account myself through the RBI-regulated Account
-        Aggregator — no account number to type.
-      </BotMessage>
+      {intro ?? (
+        <BotMessage time={time}>
+          Next, your <strong>salary account</strong>. Your loan is credited here, and I’ll find the account myself through the RBI-regulated
+          Account Aggregator — no account number to type.
+        </BotMessage>
+      )}
       {!done && phase === 'pick' && (
         <Card className="bank-card" label="Choose your bank">
           <h3 className="card-title">Where is your salary credited?</h3>

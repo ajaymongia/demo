@@ -18,24 +18,26 @@ Then open http://localhost:5180/.
 | `npm run dev`       | Starts the dev server on port 5180           |
 | `npm run build`     | Runs the typecheck, then the production build in `dist/` |
 | `npm run preview`   | Serves the built `dist/` on port 5180        |
-| `npm test`          | Unit tests (pricing, validation, routing)    |
+| `npm test`          | Unit tests (pricing, validation, routing, AI understanding) |
 | `npm run lint`      | ESLint                                       |
 | `npm run typecheck` | TypeScript, no emit                          |
 
 ## Deploy on Vercel
 
-The project is a static Vite site; `vercel.json` sets the build (`npm run build`, output `dist`). Both links work from the same deployment: `/` and `/?journey=express`.
+The project is a static Vite site; `vercel.json` sets the build (`npm run build`, output `dist`). All four links work from the same deployment: `/`, `/?journey=express`, `/?journey=ai` and `/?view=ai-ideas`. The AI journey needs no API keys or environment variables.
 
 **From GitHub (recommended):** push this folder to a repository, then in Vercel choose **Add New → Project**, import the repository and press **Deploy**. Every push redeploys.
 
 **From your computer:** in this folder run `npx vercel` and follow the prompts (log in, accept the detected settings). Add `--prod` to publish to the production URL.
 
-## Two links
+## Links
 
 | Link | What it is |
 | ---- | ---------- |
 | http://localhost:5180/ | **Standard journey**: the Figma journey screen by screen, 6 stages and 26 screens |
 | http://localhost:5180/?journey=express | **Express journey**: the same loan, branding and components in 4 stages and 12 screens |
+| http://localhost:5180/?journey=ai | **AI journey**: a clickable prototype of the AI automation ideas, 4 stages and 12 steps |
+| http://localhost:5180/?view=ai-ideas | **AI ideas**: the ideas page to share, with the AI flow, ideas by Figma stage, roadmap, guardrails and KPIs |
 
 ### What the express journey changes
 
@@ -55,6 +57,33 @@ The project is a static Vite site; `vercel.json` sets the build (`npm run build`
 | Repayment setup with UPI ID typing, then mandate, then sanction, then e-sign intro, document and OTP | Review & sign on one card, then AutoPay in one approval (no UPI ID to type) |
 
 The header also shows the time left ("About 4 min left"), and the welcome card lists what to keep handy (PAN, Aadhaar-linked mobile, net banking). The express link supports the same `scenario` values; "Welcome back" starts are only on the standard link.
+
+## The AI journey
+
+`/?journey=ai` shows the ideas on the AI ideas page working, on the same branding and components. The AI is simulated with rules and mock data (`src/ai/`), so it runs offline, needs no keys and sends nothing anywhere.
+
+| Step | What the AI does |
+| ---- | ---------------- |
+| Say what you need | Reads the first message in English or Hinglish ("Mujhe 3 lakh chahiye 2 saal ke liye, ghar repair") for amount, purpose, tenure and urgency, and plays it back |
+| OTPs (login, Aadhaar, e-sign) | Reads the code from the SMS after one **Allow**, the way Android's SMS consent prompt works |
+| PAN | Scans the card (OCR), fetches CKYC and checks the names match |
+| Bank and analysis | One Account Aggregator consent; reads salary, employer and existing EMIs, plus the bureau and fraud checks, before the offer |
+| Offer | Plans sized to the salary (Comfortable, Manageable, Stretch), with a recommended one and a reason for the cover suggestion |
+| Aadhaar and video KYC | Cross-checks PAN and Aadhaar details, then readiness, liveness and face-match checks on the call |
+| Review & sign | "Explain in simple words" turns the Key Fact Statement into plain English or Hindi |
+| AutoPay and after | Lines the EMI date up with salary day; after disbursal, reminders, answers and top-ups |
+| Declined | Turns the credit reasons into a plan to get approved next time |
+
+The message box is live in this journey only: type a question at any step ("What will my EMI be?", "Why do you need my Aadhaar?", "Is my data safe?") and the assistant answers in place, citing its source, then takes you back to the step. Changing your mind ("actually I need 3 lakh") before the analysis updates the request.
+
+The **AI notes** tick box in the top bar shows or hides a short note under each step on which idea it demonstrates. The `scenario` values above work here too.
+
+| Step | Demo input |
+| ---- | ---------- |
+| First message | Tap an example, type your own, or "Skip — just show me what I can get" |
+| OTPs | **Allow** fills the code; **Deny** or "I’ll type it myself" switches to typing, where `0000` / `000000` shows the error |
+| PAN | **Scan PAN card**, or **Type PAN instead** (any valid PAN, e.g. `ABCDE1234F`) |
+| Aadhaar | 12 digits starting 2–9, e.g. `4567 1234 6782` |
 
 ## Scenarios and starting points
 
@@ -129,8 +158,14 @@ src/
     validate.ts        phone, PAN, Aadhaar, account, UPI, email checks
   steps/               one file per stage; each step is a component plus its routing
   express/             the express journey (?journey=express): its stages, steps and app shell
+  ai/                  the AI journey (?journey=ai) and the AI ideas page (?view=ai-ideas)
+    nlu.ts             reads amount, purpose, tenure and urgency from a message (English and Hinglish)
+    assistant.tsx      answers typed questions at any step, with sources
+    insights.ts        mock statement and bureau insights; affordability plans
+    ideas.ts           the ideas, roadmap phases and AI flow shown on the ideas page
   ui/                  shared controls (cards, fields, chips, OTP, slider, address picker, icons)
   styles/app.css       Hero FinCorp tokens and all styles
+  styles/ai.css        styles for the AI journey and the ideas page
 public/
   brand/logo.svg       Hero FinCorp logo
   figma/               artwork exported from the Figma file, unchanged

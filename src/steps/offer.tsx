@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { BotMessage } from '../chat/Chat';
 import { rupees } from '../journey/format';
 import { CUSTOMER, PROTECTION_PLANS } from '../journey/mock';
@@ -38,7 +38,7 @@ function CreditCheckStep({ a, done, submit, time }: StepProps) {
 /* ── Rejected ──────────────────────────────────────────────────────────────── */
 
 /** Also used by the express journey. */
-export function RejectedStep({ time }: Pick<StepProps, 'time'>) {
+export function RejectedStep({ time, after }: Pick<StepProps, 'time'> & { after?: ReactNode }) {
   return (
     <>
       <BotMessage time={time}>I’m sorry, {CUSTOMER.firstName}. I couldn’t get you an offer this time.</BotMessage>
@@ -52,6 +52,7 @@ export function RejectedStep({ time }: Pick<StepProps, 'time'>) {
         </ul>
         <p className="muted">You can apply again after 30 days. Paying your bills and EMIs on time improves your credit profile.</p>
       </Card>
+      {after}
       <p className="proto-end">End of prototype · use Restart above to try another scenario</p>
     </>
   );

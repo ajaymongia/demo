@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { BotMessage } from '../chat/Chat';
 import { formatDate, maskTail, ordinal, rupees } from '../journey/format';
 import { APPLICATION_NO, CUSTOMER_ID, DEBIT_CARD_BANKS, fullName } from '../journey/mock';
 import { EMI_DUE_DAY, FEE_RATE, GST_RATE, INSURANCE_PER_MONTH, UPI_MANDATE_BUFFER, firstEmiDate, lastEmiDate, quote } from '../journey/pricing';
-import type { Answers } from '../journey/types';
+import type { Answers, StepProps } from '../journey/types';
 import { FinalStep } from '../steps/esign';
 import { AmountSlider, TenurePicker } from '../ui/AmountSlider';
 import { Card, Check, DemoHint, KeyValues, OtpInput, RadioCard, ResendTimer, Spinner, useAfter, useCountdown } from '../ui/controls';
@@ -146,7 +146,8 @@ function ReviewStep({ a, done, submit, time }: ExpressProps) {
 
 /* ── AutoPay: the verified account is already known, so it’s one approval ─── */
 
-function AutopayStep({ a, done, submit, time }: ExpressProps) {
+/** `intro` replaces the opening message. */
+export function AutopayStep<Id extends string>({ a, done, submit, time, intro }: StepProps<Id> & { intro?: ReactNode }) {
   const bank = a.bank!;
   const debitCard = DEBIT_CARD_BANKS.includes(bank.name);
   const [mode, setMode] = useState<'upi' | 'emandate'>('upi');
@@ -164,9 +165,11 @@ function AutopayStep({ a, done, submit, time }: ExpressProps) {
 
   return (
     <>
-      <BotMessage time={time}>
-        Signed ✅ Last step: set up <strong>AutoPay</strong> so your EMIs are paid on time, every time. Your loan is sent as soon as it’s done.
-      </BotMessage>
+      {intro ?? (
+        <BotMessage time={time}>
+          Signed ✅ Last step: set up <strong>AutoPay</strong> so your EMIs are paid on time, every time. Your loan is sent as soon as it’s done.
+        </BotMessage>
+      )}
       {!done && phase === 'choose' && (
         <Card className="repay-card" label="Set up AutoPay">
           <KeyValues

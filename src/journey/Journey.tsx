@@ -13,6 +13,19 @@ export interface Flow<Id extends string, Stage extends string> {
   firstHeader?: Id;
   /** Short line beside the step count in the header, such as the time left. */
   headerNote?: (stage: Stage | null) => string | null;
+  /** Lets the customer type: without it the message box stays disabled, as in the guided journeys. */
+  chat?: FlowChat<Id>;
+}
+
+export interface FlowChat<Id extends string> {
+  placeholder: (open: Id | null) => string;
+  /** Questions offered above the message box. */
+  suggestions?: (open: Id | null) => readonly string[];
+  /**
+   * A typed message. `open` is the step waiting for an answer (null while the next one loads). Returns either
+   * a reply to that step, or an answer of its own that leaves the step where it is (and may still update the answers).
+   */
+  handle: (text: string, a: Answers, open: Id | null) => { reply: Reply<Id> } | { answer: ReactNode; patch?: Partial<Answers> };
 }
 
 interface Entry<Id extends string> {
@@ -24,6 +37,18 @@ interface Entry<Id extends string> {
   replyTime?: string;
   /** Answers as they were when this step was answered, so later changes don't rewrite history. */
   snapshot?: Answers;
+}
+
+/** A question typed beside the journey and its answer, shown under the step it was asked at. */
+interface Aside {
+  key: number;
+  entry: number;
+  /** Asked before the step was answered, so it sits above the customer's reply. */
+  beforeReply: boolean;
+  text: string;
+  time: string;
+  answer: ReactNode;
+  ready: boolean;
 }
 
 interface Pending<Id extends string> {
@@ -52,6 +77,7 @@ export function Journey<Id extends string, Stage extends string>({
   const [answers, setAnswers] = useState<Answers>(flow.answers);
   const [entries, setEntries] = useState<Entry<Id>[]>(() => [{ key: 0, id: flow.first, time: timeNow(), done: false }]);
   const [pending, setPending] = useState<Pending<Id> | null>(null);
+  const [asides, setAsides] = useState<Aside[]>([]);
   const scrollRef = useRef<HTMLElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -90,6 +116,21 @@ export function Journey<Id extends string, Stage extends string>({
     if (pending) endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [pending]);
 
+  // The assistant "types" its answer to a question for a moment, then shows it.
+  const waiting = asides.find((x) => !x.ready);
+  useEffect(() => {
+    if (!waiting) return;
+    scrollRef.current?.querySelector(`[data-aside="${waiting.key}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    const t = setTimeout(() => setAsides((xs) => xs.map((x) => (x.key === waiting.key ? { ...x, ready: true } : x))), 750);
+    return () => clearTimeout(t);
+  }, [waiting]);
+
+  const lastReady = asides.filter((x) => x.ready).pop()?.key;
+  useEffect(() => {
+    if (lastReady === undefined) return;
+    scrollRef.current?.querySelector(`[data-aside="${lastReady}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [lastReady]);
+
   const submit = (reply: Reply<Id>) => {
     if (current.done || pending) return;
     const next = { ...answers, ...reply.patch };
@@ -108,6 +149,36 @@ export function Journey<Id extends string, Stage extends string>({
     }
   };
 
+  const open = current.done || pending ? null : current.id;
+
+  const send = (text: string) => {
+    const result = flow.chat!.handle(text, answers, open);
+    if ('reply' in result) return submit({ text, ...result.reply });
+    if (result.patch) setAnswers((x) => ({ ...x, ...result.patch }));
+    setAsides((xs) => [
+      ...xs,
+      { key: xs.length, entry: current.key, beforeReply: !current.done, text, time: timeNow(), answer: result.answer, ready: false },
+    ]);
+  };
+
+  const backToStep = () =>
+    scrollRef.current?.querySelector(`[data-entry="${current.key}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  const renderAsides = (entry: number, beforeReply: boolean) =>
+    asides
+      .filter((x) => x.entry === entry && x.beforeReply === beforeReply)
+      .map((x) => (
+        <div className="aside" data-aside={x.key} key={`aside-${x.key}`}>
+          <UserMessage time={x.time}>{x.text}</UserMessage>
+          {x.ready ? x.answer : <Typing label="Typing" />}
+          {x.ready && open && x.key === asides.length - 1 && entry === current.key && (
+            <button type="button" className="btn-link aside-back" onClick={backToStep}>
+              ↑ Back to your application
+            </button>
+          )}
+        </div>
+      ));
+
   return (
     <>
       <ChatHeader stages={flow.stages} stage={header.stage} progress={header.progress} note={flow.headerNote?.(header.stage)} />
@@ -125,14 +196,20 @@ export function Journey<Id extends string, Stage extends string>({
                 start={start}
                 time={e.time}
               />
+              {renderAsides(e.key, true)}
               {e.reply && <UserMessage time={e.replyTime}>{e.reply}</UserMessage>}
+              {renderAsides(e.key, false)}
             </div>
           );
         })}
         {pending && <Typing label={pending.label} />}
         <div ref={endRef} />
       </main>
-      <ChatInput />
+      {flow.chat ? (
+        <ChatInput onSend={send} placeholder={flow.chat.placeholder(open)} suggestions={flow.chat.suggestions?.(open)} />
+      ) : (
+        <ChatInput />
+      )}
     </>
   );
 }

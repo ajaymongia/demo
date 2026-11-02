@@ -51,6 +51,8 @@ export interface BankAccount {
 
 /** Everything the customer has told us so far. Steps read it and add to it. */
 export interface Answers {
+  /** What the customer asked for in their own words (AI journey); empty when they didn't say. */
+  request: string;
   phone: string;
   whatsapp: boolean;
   /** Requested amount, then the accepted (or upgraded) loan amount. */
