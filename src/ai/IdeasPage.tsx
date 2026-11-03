@@ -82,6 +82,7 @@ const KPIS: readonly { name: string; how: string }[] = [
 ];
 
 const LINKS = [
+  { href: '/?view=home', label: 'Home + AI assistant', text: 'The app’s home screen, where the assistant opens the chat' },
   { href: '/?journey=ai', label: 'AI journey', text: 'The prototype of these ideas' },
   { href: '/', label: 'Standard journey', text: 'The Figma journey, screen by screen' },
   { href: '/?journey=express', label: 'Express journey', text: 'Fewer screens, no AI' },

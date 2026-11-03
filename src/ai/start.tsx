@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { BotMessage } from '../chat/Chat';
 import { formatPhone, onlyDigits, rupees } from '../journey/format';
 import { CKYC_ADDRESS, CUSTOMER, fullName } from '../journey/mock';
@@ -18,13 +18,15 @@ const you = { stage: 'you' } as const;
 
 const EXAMPLES = ['₹2 lakh for my sister’s wedding', 'Mujhe 3 lakh chahiye 2 saal ke liye, ghar repair', 'Medical emergency, need 50k urgently'];
 
-function HelloStep({ done, submit, time }: AiProps) {
+function HelloStep({ done, submit, time, intro }: AiProps & { intro?: ReactNode }) {
   return (
     <>
-      <BotMessage time={time}>
-        Hi there! 👋 I’m Hero FinCorp’s <strong>AI loan assistant</strong>. Tell me what you need in your own words — English, हिन्दी or Hinglish —
-        and I’ll do the form-filling.
-      </BotMessage>
+      {intro ?? (
+        <BotMessage time={time}>
+          Hi there! 👋 I’m Hero FinCorp’s <strong>AI loan assistant</strong>. Tell me what you need in your own words — English, हिन्दी or
+          Hinglish — and I’ll do the form-filling.
+        </BotMessage>
+      )}
       <Card className="welcome-card" label="Welcome to Hero FinCorp">
         <img className="welcome-logo" src="/brand/logo.svg" alt="Hero FinCorp" width="115" height="36" />
         <h2>
@@ -66,6 +68,29 @@ function HelloStep({ done, submit, time }: AiProps) {
         in English, Hindi or Hinglish.
       </AiNote>
     </>
+  );
+}
+
+/* ── From the app's home screen: a plain hello, and the loan details once asked for ── */
+
+function GreetStep({ time }: AiProps) {
+  return (
+    <BotMessage time={time}>
+      Hi {CUSTOMER.firstName} 👋 I’m your Hero FinCorp <strong>AI assistant</strong>. How can I help you today?
+    </BotMessage>
+  );
+}
+
+function LoanStep(p: AiProps) {
+  return (
+    <HelloStep
+      {...p}
+      intro={
+        <BotMessage time={p.time}>
+          Sure! Here’s the Hero FinCorp <strong>Instant Personal Loan</strong> 👇
+        </BotMessage>
+      }
+    />
   );
 }
 
@@ -332,6 +357,9 @@ function PanStep({ a, done, submit, time }: AiProps) {
 }
 
 export const startSteps = {
+  // A need in the first message ("2 lakh for a wedding") goes straight to what was understood.
+  greet: { stage: null, progress: 0, Component: GreetStep, next: (a) => (a.request ? 'phone' : 'loan'), wait: ['Typing', 700] },
+  loan: { ...you, progress: 0, Component: LoanStep, next: () => 'phone', wait: ['Understanding your request', 900] },
   hello: { ...you, progress: 0, Component: HelloStep, next: () => 'phone', wait: ['Understanding your request', 900] },
   phone: { ...you, progress: 5, Component: PhoneStep, next: () => 'otp', wait: ['Sending OTP', 800] },
   otp: { ...you, progress: 10, Component: OtpStep, next: () => 'pan', wait: ['Verifying OTP', 600] },

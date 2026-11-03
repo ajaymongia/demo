@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { SendIcon } from '../ui/icons';
+import { BackIcon, SendIcon } from '../ui/icons';
 
 /** Same assistant avatar as the Two-Wheeler Loan Assistant. */
 export function BotAvatar() {
@@ -24,18 +24,27 @@ export function ChatHeader({
   stage,
   progress,
   note,
+  onBack,
 }: {
   stages: readonly { id: string; label: string }[];
   stage: string | null;
-  progress: number;
+  /** Null before an application has started: no progress bar. */
+  progress: number | null;
   /** Shown after the step count, e.g. "About 4 min left". */
   note?: string | null;
+  /** When the chat was opened from the app's home screen: the way back to it. */
+  onBack?: () => void;
 }) {
   const index = stage ? stages.findIndex((s) => s.id === stage) : -1;
   const label = progress === 100 ? 'Application complete' : index >= 0 ? stages[index]!.label : 'Getting started';
   return (
     <header className="chat-header">
       <div className="chat-title">
+        {onBack && (
+          <button type="button" className="chat-back" onClick={onBack} aria-label="Back to home">
+            <BackIcon />
+          </button>
+        )}
         <BotAvatar />
         <div>
           <h1>Personal Loan Assistant</h1>
@@ -45,22 +54,24 @@ export function ChatHeader({
           </p>
         </div>
       </div>
-      <div className="journey-progress">
-        <div className="jp-labels">
-          <strong>{label}</strong>
-          {progress < 100 && (index >= 0 || note) && (
-            <span>
-              {index >= 0 && `Step ${index + 1} of ${stages.length}`}
-              {index >= 0 && note && ' · '}
-              {note}
-            </span>
-          )}
+      {progress !== null && (
+        <div className="journey-progress">
+          <div className="jp-labels">
+            <strong>{label}</strong>
+            {progress < 100 && (index >= 0 || note) && (
+              <span>
+                {index >= 0 && `Step ${index + 1} of ${stages.length}`}
+                {index >= 0 && note && ' · '}
+                {note}
+              </span>
+            )}
+          </div>
+          <div className="jp-track" role="progressbar" aria-label="Application progress" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
+            <div className="jp-fill" style={{ width: `${progress}%` }} />
+          </div>
+          <span className="jp-pct">{progress}%</span>
         </div>
-        <div className="jp-track" role="progressbar" aria-label="Application progress" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
-          <div className="jp-fill" style={{ width: `${progress}%` }} />
-        </div>
-        <span className="jp-pct">{progress}%</span>
-      </div>
+      )}
     </header>
   );
 }

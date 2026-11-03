@@ -13,6 +13,8 @@ export interface Flow<Id extends string, Stage extends string> {
   firstHeader?: Id;
   /** Short line beside the step count in the header, such as the time left. */
   headerNote?: (stage: Stage | null) => string | null;
+  /** A greeting before any application starts: the header shows no progress while it is open. */
+  intro?: Id;
   /** Lets the customer type: without it the message box stays disabled, as in the guided journeys. */
   chat?: FlowChat<Id>;
 }
@@ -68,10 +70,13 @@ export function Journey<Id extends string, Stage extends string>({
   flow,
   scenario,
   start,
+  onClose,
 }: {
   flow: Flow<Id, Stage>;
   scenario: Scenario;
   start: StartAt;
+  /** Adds a back button to the header (the chat opened from the home screen). */
+  onClose?: () => void;
 }) {
   const { steps } = flow;
   const [answers, setAnswers] = useState<Answers>(flow.answers);
@@ -181,7 +186,13 @@ export function Journey<Id extends string, Stage extends string>({
 
   return (
     <>
-      <ChatHeader stages={flow.stages} stage={header.stage} progress={header.progress} note={flow.headerNote?.(header.stage)} />
+      <ChatHeader
+        stages={flow.stages}
+        stage={header.stage}
+        progress={headerStep === flow.intro ? null : header.progress}
+        note={flow.headerNote?.(header.stage)}
+        onBack={onClose}
+      />
       <main className="chat-scroll" ref={scrollRef} aria-live="polite">
         {entries.map((e) => {
           const Step = steps[e.id].Component;

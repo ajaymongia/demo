@@ -142,6 +142,20 @@ export const ChevronIcon = () => (
   </Icon>
 );
 
+export const BackIcon = () => (
+  <Icon>
+    <path d="M12.4 4.4 6.8 10l5.6 5.6" />
+  </Icon>
+);
+
+export const SlidersIcon = () => (
+  <Icon>
+    <path d="M3.5 6h8M15.5 6h1M3.5 14h1M8.5 14h8" />
+    <circle cx="13.5" cy="6" r="2" />
+    <circle cx="6.5" cy="14" r="2" />
+  </Icon>
+);
+
 export const StarIcon = () => (
   <Icon fill>
     <path d="m10 2.4 2.3 4.9 5.3.6-3.9 3.7 1 5.3L10 14.3l-4.7 2.6 1-5.3-3.9-3.7 5.3-.6z" />

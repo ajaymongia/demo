@@ -6,7 +6,11 @@ import type { StepDef, StepProps } from '../journey/types';
  */
 export type AiStage = 'you' | 'offer' | 'verify' | 'sign';
 
-export type AiId = 'hello' | 'phone' | 'otp' | 'pan' | 'bank' | 'analysis' | 'rejected' | 'offer' | 'kyc' | 'vkyc' | 'review' | 'autopay' | 'final';
+export type AiId =
+  | 'greet'
+  | 'loan'
+  | 'hello'
+  | 'phone' | 'otp' | 'pan' | 'bank' | 'analysis' | 'rejected' | 'offer' | 'kyc' | 'vkyc' | 'review' | 'autopay' | 'final';
 
 export type AiStep = StepDef<AiId, AiStage>;
 export type AiProps = StepProps<AiId>;

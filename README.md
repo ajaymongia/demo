@@ -24,7 +24,7 @@ Then open http://localhost:5180/.
 
 ## Deploy on Vercel
 
-The project is a static Vite site; `vercel.json` sets the build (`npm run build`, output `dist`). All four links work from the same deployment: `/`, `/?journey=express`, `/?journey=ai` and `/?view=ai-ideas`. The AI journey needs no API keys or environment variables.
+The project is a static Vite site; `vercel.json` sets the build (`npm run build`, output `dist`). All five links work from the same deployment: `/`, `/?journey=express`, `/?journey=ai`, `/?view=ai-ideas` and `/?view=home`. The AI journey needs no API keys or environment variables.
 
 **From GitHub (recommended):** push this folder to a repository, then in Vercel choose **Add New → Project**, import the repository and press **Deploy**. Every push redeploys.
 
@@ -38,6 +38,17 @@ The project is a static Vite site; `vercel.json` sets the build (`npm run build`
 | http://localhost:5180/?journey=express | **Express journey**: the same loan, branding and components in 4 stages and 12 screens |
 | http://localhost:5180/?journey=ai | **AI journey**: a clickable prototype of the AI automation ideas, 4 stages and 12 steps |
 | http://localhost:5180/?view=ai-ideas | **AI ideas**: the ideas page to share, with the AI flow, ideas by Figma stage, roadmap, guardrails and KPIs |
+| http://localhost:5180/?view=home | **Home + AI assistant**: the Hero FinCorp app home screen with the AI assistant on it; tapping it opens the chat |
+
+### Home screen with the AI assistant
+
+`/?view=home` starts where the customer does: on the Hero FinCorp app's home screen (`public/home/home-screen.png`, the screenshot shared on 28 Oct 2026, unchanged), whose banner already says "Mayank, you are approved for a loan of ₹3,00,000".
+
+- **The assistant:** the designer's waving robot (`public/home/robot.webp`, from the log-in design, unchanged) in a round button with an **AI** tag. It sits in the gap above the bottom nav, on the cards' right edge, so it covers nothing. A greeting points at it: "Hi Mayank 👋 I’m your AI assistant · Get your ₹3,00,000 loan in minutes" (× hides it).
+- **Opening the chat:** the assistant, the greeting, **Apply Now** and the **Personal Loan** tile all open the chat, which slides up under the status bar. The back arrow in its header returns to the home screen, and opening it again carries on where the customer left off.
+- **A light first screen:** the AI chat opens with one line, "Hi Mayank 👋 I’m your Hero FinCorp AI assistant. How can I help you today?", the message box and two suggestions; no progress bar or loan card yet. Typing **personal loan** (or tapping it) brings up the loan card, rates and fees, and "How much do you need, and what for?". A message that already says what they need ("2 lakh for my wedding") goes straight to what was understood, and other questions are answered in place. `/?journey=ai` keeps its own welcome.
+- **Prototype options:** there is no bar across the top. The floating black button at the top right opens a menu: which journey the assistant opens (AI, express or standard; `&agent=ai|express|standard`), the outcome (`&scenario=…`), **AI notes** (off here until ticked), **Restart** and **AI ideas**. A tap outside or Escape closes it.
+- **On a phone:** the home screen fills the width and scrolls, and the assistant stays at the bottom right of the screen.
 
 ### What the express journey changes
 
@@ -163,12 +174,15 @@ src/
     assistant.tsx      answers typed questions at any step, with sources
     insights.ts        mock statement and bureau insights; affordability plans
     ideas.ts           the ideas, roadmap phases and AI flow shown on the ideas page
+  home/HomeApp.tsx     the home screen with the AI assistant (?view=home), opening any of the journeys
   ui/                  shared controls (cards, fields, chips, OTP, slider, address picker, icons)
   styles/app.css       Hero FinCorp tokens and all styles
   styles/ai.css        styles for the AI journey and the ideas page
+  styles/home.css      styles for the home screen, the assistant button and the chat sheet
 public/
   brand/logo.svg       Hero FinCorp logo
   figma/               artwork exported from the Figma file, unchanged
+  home/                the app home screen screenshot and the designer's robot, unchanged
 ```
 
 To add or reorder a step, edit its file in `src/steps/`. Each step declares its stage, progress, component, `next()` route and the typing label shown before the next step. `routing.test.ts` walks the whole journey to catch broken routes.

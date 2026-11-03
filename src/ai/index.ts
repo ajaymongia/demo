@@ -22,3 +22,6 @@ export const aiFlow: Flow<AiId, AiStage> = {
   headerNote: (stage) => (stage ? `About ${MINUTES_LEFT[stage]} min left` : null),
   chat: assistant,
 };
+
+/** The same journey opened from the app's home screen: a plain hello first, and the loan details once the customer asks. */
+export const homeAiFlow: Flow<AiId, AiStage> = { ...aiFlow, first: 'greet', intro: 'greet' };

@@ -1,0 +1,439 @@
+/* ── Home screen with the AI assistant (?view=home) ───────────────────────── */
+
+/* The prototype options: a floating black button that opens a small menu, instead of a bar across the top. */
+.proto-float {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 20;
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.proto-fab {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  background: #111;
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+.proto-fab[aria-expanded='true'] {
+  background: #000;
+  box-shadow:
+    0 0 0 3px rgba(0, 242, 0, 0.35),
+    0 6px 18px rgba(0, 0, 0, 0.3);
+}
+
+.proto-menu {
+  display: grid;
+  gap: 12px;
+  width: 248px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #111;
+  color: #e8efed;
+  font-size: 13px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  animation: menu-in 0.18s ease-out;
+}
+
+.proto-menu-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.proto-field {
+  display: grid;
+  gap: 5px;
+}
+
+.proto-field span {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.proto-menu select,
+.proto-menu-actions button {
+  padding: 8px 10px;
+  border: 1px solid #343434;
+  border-radius: 8px;
+  background: #1e1e1e;
+  color: #fff;
+  font-size: 13px;
+}
+
+.proto-menu select {
+  width: 100%;
+}
+
+.proto-menu-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.proto-menu-actions button {
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+}
+
+/* Everything on the screen is placed in the screenshot's points; --pt is one point on screen. */
+.home-stage {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  overflow: auto;
+  background: radial-gradient(120% 80% at 50% 0%, #e3f3ee 0, var(--page) 70%);
+}
+
+.phone {
+  --pt: min(1px, calc((100dvh - 72px) / 852));
+  position: relative;
+  width: calc(393 * var(--pt));
+  height: calc(852 * var(--pt));
+  border-radius: calc(54 * var(--pt));
+  /* clip, not hidden: the chat scrolls things into view, and a hidden box can still be scrolled */
+  overflow: clip;
+  background: #fff;
+  box-shadow:
+    0 0 0 calc(11 * var(--pt)) #0c1513,
+    0 0 0 calc(12 * var(--pt)) #33433f,
+    0 34px 70px -18px rgba(2, 40, 32, 0.45);
+}
+
+.phone-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.phone-shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.home-hot {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  border-radius: calc(10 * var(--pt));
+  background: transparent;
+  cursor: pointer;
+}
+
+.home-hot:hover {
+  box-shadow: 0 0 0 2px rgba(0, 242, 0, 0.55);
+}
+
+/* The assistant button: the designer's waving robot in a brand-green ring, with an AI tag. It sits in the gap
+   between the EMI Calculator card (ends at 717.5) and the nav icons (start at 764), on the cards' right edge. */
+.phone-float {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.phone-float > * {
+  pointer-events: auto;
+}
+
+.agent-fab {
+  position: absolute;
+  right: calc(20.5 * var(--pt));
+  bottom: calc(87 * var(--pt));
+  width: calc(48 * var(--pt));
+  height: calc(48 * var(--pt));
+  padding: 0;
+  border: calc(2 * var(--pt)) solid var(--g-400);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 30%, #fff 0, var(--g-100) 100%);
+  box-shadow: 0 calc(6 * var(--pt)) calc(16 * var(--pt)) rgba(2, 65, 52, 0.3);
+  cursor: pointer;
+  animation: agent-bob 3.2s ease-in-out infinite;
+}
+
+.agent-fab::before {
+  content: '';
+  position: absolute;
+  inset: calc(-2 * var(--pt));
+  border: calc(2 * var(--pt)) solid var(--g-400);
+  border-radius: 50%;
+  animation: agent-pulse 2.4s ease-out infinite;
+  pointer-events: none;
+}
+
+.agent-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.agent-face img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.5) translate(-4%, 10%);
+}
+
+.agent-badge {
+  position: absolute;
+  top: calc(-5 * var(--pt));
+  left: calc(-8 * var(--pt));
+  display: inline-flex;
+  align-items: center;
+  gap: calc(1 * var(--pt));
+  padding: calc(1.5 * var(--pt)) calc(5 * var(--pt)) calc(1.5 * var(--pt)) calc(3 * var(--pt));
+  border: calc(1.5 * var(--pt)) solid #fff;
+  border-radius: 999px;
+  background: var(--g-900);
+  color: var(--pl-neon);
+  font-size: calc(9 * var(--pt));
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.agent-badge .icon {
+  width: calc(10 * var(--pt));
+  height: calc(10 * var(--pt));
+}
+
+/* The greeting, above the button (the QR button is to its left) and pointing down at it. */
+.agent-bubble {
+  position: absolute;
+  right: calc(20.5 * var(--pt));
+  bottom: calc(143 * var(--pt));
+  display: flex;
+  align-items: flex-start;
+  width: max-content;
+  border-radius: calc(12 * var(--pt)) calc(12 * var(--pt)) calc(4 * var(--pt)) calc(12 * var(--pt));
+  background: var(--g-900);
+  color: #fff;
+  box-shadow: 0 calc(8 * var(--pt)) calc(20 * var(--pt)) rgba(2, 40, 32, 0.28);
+  transform-origin: 100% 100%;
+  animation: bubble-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+}
+
+.agent-bubble::after {
+  content: '';
+  position: absolute;
+  right: calc(18 * var(--pt));
+  bottom: calc(-6 * var(--pt));
+  border-width: calc(7 * var(--pt)) calc(6 * var(--pt)) 0;
+  border-style: solid;
+  border-color: var(--g-900) transparent transparent;
+}
+
+.agent-bubble-open {
+  display: grid;
+  gap: calc(2 * var(--pt));
+  padding: calc(8 * var(--pt)) 0 calc(8 * var(--pt)) calc(11 * var(--pt));
+  border: 0;
+  background: none;
+  color: var(--on-dark-2);
+  font-size: calc(11.5 * var(--pt));
+  line-height: 1.3;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.agent-bubble-open strong {
+  color: #fff;
+  font-size: calc(12.5 * var(--pt));
+  font-weight: 500;
+}
+
+.agent-bubble-close {
+  flex: none;
+  width: calc(26 * var(--pt));
+  height: calc(26 * var(--pt));
+  margin: calc(2 * var(--pt)) calc(2 * var(--pt)) 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--on-dark-2);
+  font-size: calc(16 * var(--pt));
+  line-height: 1;
+  cursor: pointer;
+}
+
+@keyframes agent-pulse {
+  0% {
+    opacity: 0.75;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+
+@keyframes agent-bob {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: translateY(calc(-2 * var(--pt)));
+  }
+}
+
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
+}
+
+/* The chat slides up over the home screen, below the status bar. */
+.phone-sheet {
+  position: absolute;
+  inset: calc(50 * var(--pt)) 0 0;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(22 * var(--pt));
+  border-radius: calc(16 * var(--pt)) calc(16 * var(--pt)) 0 0;
+  overflow: clip;
+  background: #fff;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.14);
+  transform: translateY(102%);
+  visibility: hidden;
+  transition:
+    transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear 0.38s;
+}
+
+.phone-sheet.is-open {
+  transform: none;
+  visibility: visible;
+  transition: transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.phone-sheet .chat {
+  max-width: none;
+  box-shadow: none;
+}
+
+.home-indicator {
+  position: absolute;
+  left: 50%;
+  bottom: calc(8 * var(--pt));
+  width: calc(134 * var(--pt));
+  height: calc(5 * var(--pt));
+  border-radius: 999px;
+  background: #111;
+  transform: translateX(-50%);
+}
+
+.chat-back {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 40px;
+  margin-left: -8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--pl-title);
+  cursor: pointer;
+}
+
+.chat-back .icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* The phone is narrower than the chat's 420px breakpoint even on a wide screen, so it gets the same rules. */
+.phone-sheet .chat-scroll {
+  padding: 12px 12px 24px;
+}
+
+.phone-sheet .pl-card {
+  padding: 14px;
+}
+
+.phone-sheet .offer-card,
+.phone-sheet .resume-card {
+  padding: 0;
+}
+
+.phone-sheet .offer-card {
+  padding-bottom: 14px;
+}
+
+.phone-sheet .bubble {
+  max-width: 86%;
+}
+
+.phone-sheet .upgrade-banner {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.phone-sheet .radio-card:has(> .ribbon) .radio-card-head {
+  padding-right: 14px;
+  padding-top: 28px;
+}
+
+.phone-sheet .radio-card-body {
+  padding-left: 14px;
+}
+
+.phone-sheet .tenure-options {
+  gap: 6px;
+}
+
+/* On a phone, the page is the phone: full width, and the home screen scrolls if it is taller. */
+@media (max-width: 480px) {
+  .home-stage {
+    display: flex;
+    padding: 0;
+  }
+
+  .phone {
+    --pt: calc(100vw / 393);
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .phone-screen {
+    overflow-y: auto;
+  }
+
+  /* Still below the status bar, which leaves room for the options button above the chat header. */
+  .phone-sheet {
+    padding-bottom: 0;
+  }
+
+  .home-indicator {
+    display: none;
+  }
+}

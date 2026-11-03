@@ -3,7 +3,7 @@ import { EXPRESS_STEPS } from '../express';
 import { NEW_ANSWERS } from '../journey/mock';
 import { quote } from '../journey/pricing';
 import type { Scenario } from '../journey/types';
-import { AI_STEPS, aiFlow } from '.';
+import { AI_STEPS, aiFlow, homeAiFlow } from '.';
 import { comfortOf, plansFor } from './insights';
 import { AI_STAGES, type AiId } from './stages';
 
@@ -55,6 +55,33 @@ describe('AI journey routing', () => {
 
   it('declines after the analysis in the rejected scenario', () => {
     expect(walk('analysis', 'rejected')).toEqual(['analysis', 'rejected']);
+  });
+});
+
+describe('the assistant opened from the home screen', () => {
+  const chat = homeAiFlow.chat!;
+
+  it('starts with a plain greeting, and shows the loan details once the customer asks for a loan', () => {
+    expect(homeAiFlow.first).toBe('greet');
+    expect(homeAiFlow.intro).toBe('greet');
+    expect(chat.handle('Personal loan', NEW_ANSWERS, 'greet')).toEqual({ reply: {} });
+    expect(chat.handle('Mujhe loan chahiye', NEW_ANSWERS, 'greet')).toEqual({ reply: {} });
+    expect(AI_STEPS.greet.next(NEW_ANSWERS, 'disbursed')).toBe('loan');
+    expect(AI_STEPS.loan.next(NEW_ANSWERS, 'disbursed')).toBe('phone');
+  });
+
+  it('goes straight to what it understood when the first message says how much', () => {
+    const result = chat.handle('2 lakh for a wedding', NEW_ANSWERS, 'greet');
+    expect(result).toEqual({ reply: { patch: { request: '2 lakh for a wedding', amount: 2_00_000, purpose: 'Wedding' } } });
+    const patch = 'reply' in result ? result.reply.patch : {};
+    expect(AI_STEPS.greet.next({ ...NEW_ANSWERS, ...patch }, 'disbursed')).toBe('phone');
+  });
+
+  it('answers anything else on the greeting without starting an application', () => {
+    expect(chat.handle('What’s the interest rate on a personal loan?', NEW_ANSWERS, 'greet')).toHaveProperty('answer');
+    expect(chat.handle('What can you do?', NEW_ANSWERS, 'greet')).toHaveProperty('answer');
+    expect(chat.handle('hi', NEW_ANSWERS, 'greet')).toHaveProperty('answer');
+    expect(chat.suggestions?.('greet')).toContain('Personal loan');
   });
 });
 

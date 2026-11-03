@@ -27,6 +27,9 @@ import type { AiId } from './stages';
  */
 
 /** Asking about money rather than asking for it: "EMI for 2 lakh?", "2 lakh ka byaj kitna?". */
+/** Asking for a loan without saying how much ("personal loan", "loan chahiye"). */
+const LOAN = /\bloans?\b|personal|borrow|udhaar|udhar|\bpaise\b|money|cash/i;
+
 const INFO = /\bemi\b|instal|kist|interest|\brates?\b|byaj|\bfees?\b|charges?|kitna|kitni|how much|calculat/i;
 
 /** An answer bubble with the source it was taken from, as a grounded assistant would cite it. */
@@ -244,6 +247,14 @@ function answer(text: string, a: Answers, open: AiId | null): ReactNode {
       </Answer>
     );
   }
+  if (/what can you do|what do you do|how can you help|kya kar sakte/.test(t)) {
+    return (
+      <Answer source="your assistant">
+        I can get you a personal loan of up to {rupees(LIMITS.max)} in a few minutes: tell me how much you need and I’ll do the form-filling. I can
+        also answer questions on interest rates, EMIs, fees and documents.
+      </Answer>
+    );
+  }
   if (/^\s*(hi|hello|hey|namaste|namaskar)\b/.test(t)) {
     return (
       <Answer source="your assistant">
@@ -259,7 +270,9 @@ function answer(text: string, a: Answers, open: AiId | null): ReactNode {
 
   return (
     <Answer source="your assistant">
-      {open === 'hello'
+      {open === 'greet'
+        ? 'Type “personal loan” to get started. '
+        : open === 'hello' || open === 'loan'
         ? 'Tell me roughly how much you need and what for, e.g. “2 lakh for a wedding” or “50k for 1 year”. '
         : 'I’m not sure about that one. '}
       I can help with interest rates, EMIs, fees, documents and keeping your data safe, or connect you to a person.
@@ -268,6 +281,8 @@ function answer(text: string, a: Answers, open: AiId | null): ReactNode {
 }
 
 const SUGGESTIONS: Partial<Record<AiId, readonly string[]>> = {
+  greet: ['Personal loan', 'What can you do?'],
+  loan: ['What’s the interest rate?', 'What documents do I need?'],
   hello: ['What’s the interest rate?', 'What documents do I need?'],
   phone: ['Why do you need my number?', 'Is my data safe?'],
   otp: ['Is my data safe?'],
@@ -282,15 +297,26 @@ const SUGGESTIONS: Partial<Record<AiId, readonly string[]>> = {
   rejected: ['Why was I not approved?', 'Talk to a person'],
 };
 
+const PLACEHOLDERS: Partial<Record<AiId, string>> = {
+  greet: 'e.g. “I need a personal loan”',
+  loan: 'e.g. “2 lakh for a wedding”',
+  hello: 'e.g. “2 lakh for a wedding”',
+};
+
+/** Steps that ask what the customer needs, where a stated need is the answer. */
+const ASKS_NEED: readonly (AiId | null)[] = ['greet', 'loan', 'hello'];
+
 export const assistant: FlowChat<AiId> = {
-  placeholder: (open) => (open === 'hello' ? 'e.g. “2 lakh for a wedding”' : 'Ask me anything about your loan…'),
+  placeholder: (open) => (open && PLACEHOLDERS[open]) || 'Ask me anything about your loan…',
   suggestions: (open) => (open ? (SUGGESTIONS[open] ?? []) : []),
   handle: (text, a, open) => {
     const need = parseNeed(text);
     const statesNeed = (need.amount !== null || need.purpose !== null) && !INFO.test(text);
-    if (open === 'hello' && statesNeed) return { reply: { patch: needPatch(text) } };
+    if (ASKS_NEED.includes(open) && statesNeed) return { reply: { patch: needPatch(text) } };
+    // "Personal loan" on the greeting brings up the loan details.
+    if (open === 'greet' && LOAN.test(text) && !INFO.test(text)) return { reply: {} };
     // Changing their mind before the offer ("actually I need 3 lakh") updates the request without a form.
-    if (open && open !== 'hello' && a.income === 0 && statesNeed && need.amount !== null) {
+    if (open && !ASKS_NEED.includes(open) && a.income === 0 && statesNeed && need.amount !== null) {
       // Keep the tenure from the first message unless this one gives a new one.
       const before = parseNeed(a.request).months;
       return {
